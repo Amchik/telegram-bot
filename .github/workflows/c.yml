@@ -1,0 +1,27 @@
+name: C CI
+
+on: [ push, pull_request ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        target: [ RELEASE, CLANG, DEBUG ]
+        
+    env:
+      TARGET: ${{ matrix.target }}
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run info
+      run: make info
+    - name: Build
+      run: make
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: telegram-bot-${{ matrix.target }}
+        path: bin/telegram-bot
