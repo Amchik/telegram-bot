@@ -8,16 +8,16 @@
 #include <json-c/json.h>
 
 enum TelegramCallback {
-	TGCB_COMMAND
+  TGCB_COMMAND
 };
 
 /*
  * Represents a command function declaration in 'botcommands' section.
  */
 typedef struct {
-	char name[255];
-	enum TelegramCallback type;
-	void (*func) (json_object *event);
+  char name[255];
+  enum TelegramCallback type;
+  void (*func) (json_object *event);
 } tgcbfn_t;
 
 /*

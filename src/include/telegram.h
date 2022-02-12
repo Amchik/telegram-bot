@@ -19,9 +19,9 @@ typedef struct _telegram_otps* topts_t;
  * Use topt_new to create one
  */
 struct _telegram_otps {
-	const char *key;
-	const char *value;
-	topts_t next;
+  const char *key;
+  const char *value;
+  topts_t next;
 };
 
 /*

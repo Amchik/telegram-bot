@@ -8,7 +8,7 @@
 #define BOTCOMMAND_ATTR __attribute__((section("botcommands")))
 
 #define BOTCOMMAND_NEWVAR(_varname, cmdname, cmdfunc) \
-	cmdfn_t _varname BOTCOMMAND_ATTR = {.name = cmdname, .func = cmdfunc}
+  cmdfn_t _varname BOTCOMMAND_ATTR = {.name = cmdname, .func = cmdfunc}
 
 #define BOTCOMMAND_NEW(cmdname, cmdfunc) BOTCOMMAND_NEWVAR(cmdname, #cmdname, cmdfunc)
 
