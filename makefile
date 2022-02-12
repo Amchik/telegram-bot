@@ -40,7 +40,7 @@ endif
 
 _LDFLAGS = -lcurl -ljson-c
 _CFLAGS_LOG = -Wall -Wextra -pedantic -Wpedantic
-_CFLAGS_DEFINES = -Isrc/ -D _DEFAULT_SOURCE
+_CFLAGS_DEFINES = -Isrc/ -D _DEFAULT_SOURCE $(shell pkg-config --cflags json-c)
 _STD=c99
 ifeq ($(USE_THREADS), 1)
 	_CFLAGS_THREADS := -DMULTITHREADING -pthread
