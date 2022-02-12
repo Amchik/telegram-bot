@@ -5,7 +5,7 @@
 #ifndef __oFcZJH_telegram_h
 #define __oFcZJH_telegram_h
 
-#include <json-c/json_types.h>
+#include "json-c/json_types.h"
 
 extern char *TELEGRAM_TOKEN;
 

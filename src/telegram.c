@@ -1,7 +1,7 @@
 #include <stdarg.h>
 #include <curl/curl.h>
 #include <curl/easy.h>
-#include <json-c/json.h>
+#include "json-c/json.h"
 
 #include "include/telegram.h"
 #include "include/matestr.h"

@@ -5,7 +5,7 @@
 #ifndef __ASltCd_botcommands_h
 #define __ASltCd_botcommands_h
 
-#include <json-c/json.h>
+#include "json-c/json.h"
 
 enum TelegramCallback {
   TGCB_COMMAND
