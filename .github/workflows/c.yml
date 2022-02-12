@@ -13,6 +13,7 @@ jobs:
         
     env:
       TARGET: ${{ matrix.target }}
+      CFLAGS: -I/usr/include
 
     steps:
     - uses: actions/checkout@v2
