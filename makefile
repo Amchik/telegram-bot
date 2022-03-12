@@ -42,7 +42,7 @@ _LDFLAGS = -lcurl -ljson-c
 _CFLAGS_LOG = -Wall -Wextra -pedantic -Wpedantic
 _CFLAGS_DEFINES = -Isrc/ -D _DEFAULT_SOURCE
 _STD=c99
-ifeq ($(USE_THREADS), 1)
+ifneq ($(USE_THREADS), 0)
 	_CFLAGS_THREADS := -DMULTITHREADING -pthread
 	_LDFLAGS_THREADS := -pthread
 else

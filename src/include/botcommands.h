@@ -8,7 +8,8 @@
 #include <json-c/json.h>
 
 enum TelegramCallback {
-  TGCB_COMMAND
+  TGCB_COMMAND,
+  TGCB_TEXT
 };
 
 /*
@@ -44,6 +45,11 @@ typedef struct {
  * Macro for creating new bot command value.
  */
 #define TelegramEvent$command(_name, _fn) TelegramEvent$new(_name, TGCB_COMMAND, _fn)
+
+/*
+ * Macro for creating new bot command value.
+ */
+#define TelegramEvent$text(_name, _fn) TelegramEvent$new(_name, TGCB_TEXT, _fn)
 
 #endif
 

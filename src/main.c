@@ -6,6 +6,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <unistd.h>
+#include <pthread.h>
 
 #include "include/botcommands.h"
 #include "include/telegram.h"
@@ -25,7 +26,7 @@ handlesegfault(int code) {
 }
 
 void
-getcommandname(matestr *str, const char *text) {
+getcommandname(matestr *str, const char *text, const char *selfname) {
   const char *s;
 
   str->length = 0;
@@ -36,13 +37,14 @@ getcommandname(matestr *str, const char *text) {
   if (s - text == 0) {
     return;
   }
+  if (*s == '@' && strcmp(s + 1, selfname)) {
+    return;
+  }
   matestr_append(str, text, s - text);
 
   if (str->__allocated - str->length > 40) {
     matestr_optimize(str);
   }
-
-  return;
 }
 
 void
@@ -94,6 +96,52 @@ inittelegramtoken() {
   TELEGRAM_TOKEN = token;
 }
 
+typedef struct {
+  tgcbfn_t *eviter;
+  json_object *buff;
+} runcmd_context;
+
+void
+run_command_newthread_signal(int signal) {
+  pthread_exit((void*)(size_t)signal);
+}
+
+void*
+run_command_newthread(void *arg) {
+  runcmd_context ctx;
+  register int i;
+
+  ctx = *(runcmd_context*)arg;
+
+  for (i = 0; i < 35; i++)
+    signal(i, run_command_newthread_signal);
+
+  ctx.eviter->func(ctx.buff);
+
+  return(0);
+}
+
+void
+run_command(tgcbfn_t *eviter, json_object *buff) {
+  runcmd_context ctx;
+  pthread_t th;
+  int code, err;
+
+  ctx.eviter = eviter;
+  ctx.buff = buff;
+
+  pthread_create(&th, 0, &run_command_newthread, &ctx);
+
+  err = pthread_join(th, (void**)&code);
+  if (err) {
+    printf("[PTHREAD] Failed join thread 0x%lx with event %p (%s), buffer %p with code %d (%s)\n",
+        th, eviter, eviter->name, buff, err, strerror(err));
+  }
+  if (code != 0) {
+    printf("[PTHREAD] Thread 0x%lx terminated by signal %d (%s)\n", th, code, strsignal(code));
+  }
+}
+
 int
 main(void) {
   json_object *root, *buff, *buff2;
@@ -125,6 +173,10 @@ main(void) {
   json_object_put(root);
   printf("\r\033[32m[LOGGED IN]\033[0m As \033[1m@%s\033[0m\n", selfname);
 
+  for (eviter = &__start_tgevents; eviter < &__stop_tgevents; eviter = (void*)eviter + 0x120) {
+    printf("[LOADED] Event %p type %d with data %s and function at %p\n", eviter, eviter->type, eviter->name, (void*)eviter->func);
+  }
+
   while (1) {
     offset[0] = '\0';
     sprintf(offset, "%lu", last_update_id);
@@ -148,23 +200,25 @@ main(void) {
         buff2 = json_object_object_get(buff, "text");
         if (buff2) {
           textbuff = json_object_get_string(buff2);
-          if (*textbuff == '/') {
-            textbuff += 1;
-            getcommandname(&mbuff, textbuff);
-
-            for (eviter = &__start_tgevents; eviter < &__stop_tgevents; eviter++) {
-              switch (eviter->type) {
-                case TGCB_COMMAND:
-                  if (strcmp(eviter->name, mbuff.cstr) != 0)
-                    break;
-                  eviter->func(buff);
+          for (eviter = &__start_tgevents; eviter < &__stop_tgevents; eviter = (void*)eviter + 0x120) { /* pls ignore */
+            switch (eviter->type) {
+              case TGCB_COMMAND: {
+                if (*textbuff != '/') break;
+                getcommandname(&mbuff, textbuff + 1, selfname);
+                if (strcmp(eviter->name, mbuff.cstr) != 0)
                   break;
-              }
-            } // for
-          } // startsWith '/'
-        } // message has text
-      } // event has message
-    } // result[] not empty
+                run_command(eviter, buff);
+                break;
+              } /* TGCB_COMMAND */
+              case TGCB_TEXT: {
+                run_command(eviter, buff);
+                break;
+              } /* TGCB_TEXT */
+            } /* switch event type */
+          } /* for                 */
+        } /* message has text      */
+      } /* event has message       */
+    } /* result[] not empty        */
 
     json_object_put(root);
   }
