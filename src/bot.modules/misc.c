@@ -7,7 +7,7 @@
 #include "../include/telegram.h"
 #include "../include/matestr.h"
 
-void
+/*void
 cmdimpl_msginfo(json_object *event) {
   const char *chat_id, *message_id;
   json_object *reply_to_message;
@@ -79,4 +79,4 @@ cmdimpl_memdump(json_object *event) {
 
 TelegramEvent cmdmsginfo = TelegramEvent$command("msginfo", cmdimpl_msginfo);
 TelegramEvent cmdmemdump = TelegramEvent$command("memdump", cmdimpl_memdump);
-
+*/

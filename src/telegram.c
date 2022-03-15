@@ -26,13 +26,13 @@ tg__curlwritter(void *ptr, size_t size, size_t nmemb, matestr *str) {
 }
 
 void
-tg__makeurl(matestr *str, char *method, topts_t opts) {
+tg__makeurl(matestr *str, const char *method, const char *telegram_token, topts_t opts) {
   topts_t buff, fbuff;
   char *escaped;
 
   matestr_append(str, "https://api.telegram.org/bot", 0);
   /* token, etc... */
-  matestr_append(str, TELEGRAM_TOKEN, 0);
+  matestr_append(str, telegram_token, 0);
   matestr_append(str, "/", 0);
   matestr_append(str, method, 0);
   if (opts) {
@@ -64,14 +64,36 @@ tg_request(char *method, topts_t opts) {
   str = matestralloc(1);
   url = matestralloc(1);
 
-  tg__makeurl(&url, method, opts);
+  tg__makeurl(&url, method, TELEGRAM_TOKEN, opts);
 
   curl = curl_easy_init();
   curl_easy_setopt(curl, CURLOPT_URL, url.cstr);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, tg__curlwritter);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &str);
-  curl_easy_setopt(curl, CURLOPT_USERAGENT, "libcurl/7.79.1 AmchikTelegramBot/1.0");
-  /* i know this program cannot be compiled (or executed) on windows */
+  curl_easy_perform(curl);
+  curl_easy_cleanup(curl);
+
+  result = json_tokener_parse(str.cstr);
+  free(str.cstr);
+  free(url.cstr);
+  return(result);
+}
+
+json_object*
+tg_makereq(const char *telegram_token, const char *method, topts_t opts) {
+  CURL *curl;
+  matestr str, url;
+  json_object *result;
+
+  str = matestralloc(1);
+  url = matestralloc(1);
+
+  tg__makeurl(&url, method, telegram_token, opts);
+
+  curl = curl_easy_init();
+  curl_easy_setopt(curl, CURLOPT_URL, url.cstr);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, tg__curlwritter);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &str);
   curl_easy_perform(curl);
   curl_easy_cleanup(curl);
 

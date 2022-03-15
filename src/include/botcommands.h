@@ -5,22 +5,6 @@
 #ifndef __ASltCd_botcommands_h
 #define __ASltCd_botcommands_h
 
-#include <json-c/json.h>
-
-enum TelegramCallback {
-  TGCB_COMMAND,
-  TGCB_TEXT
-};
-
-/*
- * Represents a command function declaration in 'botcommands' section.
- */
-typedef struct {
-  char name[255];
-  enum TelegramCallback type;
-  void (*func) (json_object *event);
-} tgcbfn_t;
-
 /*
  * Macros for section name.
  */
@@ -34,7 +18,7 @@ typedef struct {
 /*
  * Type for bot commands.
  */
-#define TelegramEvent _TgEvent tgcbfn_t
+#define TelegramEvent _TgEvent struct TelegramCallbackFunction
 
 /*
  * Macro for creating new TelegramEvent declaration
@@ -50,6 +34,17 @@ typedef struct {
  * Macro for creating new bot command value.
  */
 #define TelegramEvent$text(_name, _fn) TelegramEvent$new(_name, TGCB_TEXT, _fn)
+
+/* FUTURE */
+
+/*
+ * (Future)
+ * Declarate telegram event.
+ * TELEGRAM_EVENT(unique id, "name", TGCB_TYPE, on_trigger)
+ */
+#define TELEGRAM_EVENT(_id, _name, _type, _fn) \
+  __attribute__((section(tgevents))) \
+  struct TelegramCallbackFunction _id = { .name = _name, .type = _type, .func = _fn }
 
 #endif
 
